@@ -1,0 +1,44 @@
+ENTRY (_start)
+
+MEMORY {
+   flash : ORIGIN = 0x00000000, LENGTH = 2M
+   ram   : ORIGIN = 0x0C000000, LENGTH = 8M
+   }
+   
+   /* Useful values */
+   flash_end = ORIGIN(flash) + LENGTH(flash);
+   flash_start = ORIGIN(flash);   
+   ram_end = ORIGIN(ram) + LENGTH(ram);
+   ram_start = ORIGIN(ram);
+   stack_init = ORIGIN(ram) + LENGTH(ram) - 4;
+   os_start = 0x5000;
+ 
+SECTIONS {
+	. = ORIGIN(flash);
+	
+	prog : {
+		crt0.o
+		*(.text)
+		*(.rodata*)
+		_etext = .;
+	} > flash
+
+  . = ALIGN(4) ;
+	
+   .data : {
+	               _data = .;         /* Used by startup. */
+	               *(.data)
+	               _edata = .;        /* Used by startup. */
+         } > ram AT>flash
+         
+   . = ALIGN(4) ;
+	
+	 .bss  : {
+	               _bstart = . ;
+	               *(.bss)
+	               *(COMMON)
+	               _bend  = . ;
+         } > ram                          /* pas charge donc pas de LMA */
+         
+	 _end  = . ;
+}
